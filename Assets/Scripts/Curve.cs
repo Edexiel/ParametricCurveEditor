@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Transactions;
 using UnityEditor;
-using UnityEditor.Experimental.TerrainAPI;
 using UnityEngine;
-using UnityEngine.Animations;
 
 public abstract class Curve
 {
@@ -31,7 +27,6 @@ public abstract class Curve
 
         points.Add(GetPoint(max) + offset);
 
-        Debug.Log(points.Count);
         return points;
     }
 
@@ -47,8 +42,8 @@ public abstract class Curve
 
 public class Line : Curve
 {
-    private Vector3 point;
-    private Vector3 direction;
+    private Vector3 point = new Vector3(-1.5f, 15f, 0);
+    private Vector3 direction = new Vector3(14f, 7f, 0f);
 
     public override Vector3 GetPoint(float t)
     {
@@ -114,9 +109,15 @@ public class Epiycloid : Curve
     private float radius = 10f;
     private float k = 4f;
 
+    public Epiycloid()
+    {
+        samples = 100;
+    }
+
     public override Vector3 GetPoint(float t)
     {
-        return new Vector3(radius * (t - Mathf.Sin(t)), radius * (1f - Mathf.Cos(t)), 0);
+        return new Vector3(radius * (k + 1f) * Mathf.Cos(t) - radius * Mathf.Cos((k + 1f) * t),
+            radius * (k + 1f) * Mathf.Sin(t) - radius * Mathf.Sin((k + 1f) * t), 0);
     }
 
     public override void OnInspectorGUI()
@@ -125,5 +126,63 @@ public class Epiycloid : Curve
 
         radius = EditorGUILayout.FloatField("Radius", radius);
         k = EditorGUILayout.FloatField("Repetitions", k);
+    }
+}
+
+public class Cardioid : Curve
+{
+    private float radius = 10f;
+
+    public Cardioid()
+    {
+        min = 0;
+        max = Mathf.PI * 2f;
+        samples = 100;
+    }
+
+    public override Vector3 GetPoint(float t)
+    {
+        return new Vector3(2f * radius * (1f - Mathf.Cos(t)) * Mathf.Cos(t),
+            2f * radius * (1f - Mathf.Cos(t)) * Mathf.Sin(t), 0);
+    }
+
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        radius = EditorGUILayout.FloatField("Radius", radius);
+    }
+}
+
+public class Lissajous : Curve
+{
+    private float A = 60f;
+    private float B = 40f;
+    private float alpha = 1f;
+    private float beta = -2f;
+    private float delta =  Mathf.PI/20;
+
+
+    public Lissajous()
+    {
+        min = 0;
+        max = Mathf.PI * 2f;
+        samples = 100;
+    }
+
+    public override Vector3 GetPoint(float t)
+    {
+        return new Vector3(A*Mathf.Sin(alpha*t+delta),B*Mathf.Sin(beta*t), 0);
+    }
+
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        A = EditorGUILayout.FloatField("A", A);
+        B = EditorGUILayout.FloatField("B", B);
+        alpha = EditorGUILayout.FloatField("alpha", alpha);
+        beta = EditorGUILayout.FloatField("beta", beta);
+        delta = EditorGUILayout.FloatField("delta", delta);
     }
 }
